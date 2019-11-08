@@ -1,0 +1,18 @@
+---
+title: "baseline_data_clean"
+author: "Madeline Berger"
+date: "11/8/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+
+
+lat_lon = read.csv("lag_lng_allbaseline.csv")
+```
+
