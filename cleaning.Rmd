@@ -33,10 +33,10 @@ poly_list <- vector("list", length(id_vec))
 #building a table
 
   
-#df <- lat_lon %>% 
-   #filter(a_hhid == 10010013) %>% 
-    #select(longitude, latitude) %>% 
-    #as.matrix
+df <- lat_lon %>% 
+   filter(a_hhid == 10010013) %>% 
+    select(longitude, latitude) %>% 
+    as.matrix
 
 for(i in seq_along(unique(lat_lon$a_hhid))){
   #filter the df 
@@ -49,6 +49,11 @@ for(i in seq_along(unique(lat_lon$a_hhid))){
   #create the polygon, and add attributes
   poly <- st_sf(data.frame(a_hhid = id, st_sfc(st_polygon(list(as.matrix(df_test)))),crs = 4326))
 }
+
+
+
+
+
 ```
 
 
