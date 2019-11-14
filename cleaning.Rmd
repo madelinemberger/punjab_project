@@ -19,6 +19,7 @@ head(lat_lon$latitude[1])
 
 x = lat_lon$latitude[1]
 
+
 #loop over all the different of a_hhid and for each one, filter by "a_hhid = this" 
 
 #and then pull out lat and longitude 
@@ -38,6 +39,9 @@ df <- lat_lon %>%
     select(longitude, latitude) %>% 
     as.matrix
 
+y = df[1]
+z = df[9,2] #does it make a difference that this is a "named number"
+
 for(i in seq_along(unique(lat_lon$a_hhid))){
   #filter the df 
   id = id_vec[i]
@@ -48,6 +52,7 @@ for(i in seq_along(unique(lat_lon$a_hhid))){
   #get the coodrinates
   #create the polygon, and add attributes
   poly <- st_sf(data.frame(a_hhid = id, st_sfc(st_polygon(list(as.matrix(df_test)))),crs = 4326))
+  poly_list[[i]] <- poly
 }
 
 
