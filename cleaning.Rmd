@@ -75,10 +75,16 @@ for(i in seq_along(unique(df_short$unique_id))){
   #create the polygon, and add attributes
   poly <- st_sf(data.frame(id = id, st_sfc(st_polygon(list(as.matrix(df_short))),crs = 4326)))
   
- poly_list[[i]] <- poly
+ poly_list[[i]] <- poly[[2,1]]
 }
 
+#another idea to try: 
 
+polygon <- df %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")
+polygon
 
 
 
