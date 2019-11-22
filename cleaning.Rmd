@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(sf)
+library(stringr)
 
 lat_lon <- read.csv("lag_lng_allbaseline.csv")
 
@@ -19,40 +20,62 @@ head(lat_lon$latitude[1])
 
 x = lat_lon$latitude[1]
 
+#create a unique identifier for each group of vertices by merging the plot id column with the farmer id to create a new id
 
+lat_lon_id <- lat_lon %>%
+  mutate(unique_id=paste(substr(plot_id, 2, 2), a_hhid))
+  
+
+lat_lon_id$unique_id <- gsub(" ", "", lat_lon_id$unique_id, fixed = TRUE)
+  #unite("unique_id", plot_id, a_hhid, remove = FALSE)
+
+#the goal is to:
 #loop over all the different of a_hhid and for each one, filter by "a_hhid = this" 
-
 #and then pull out lat and longitude 
 #turn into matrix 
 ```
 
 ```{r}
 
-id_vec <- unique(lat_lon$a_hhid) #make a list of all the values in a_hhid
+#filter out for a test set
+id_vec <- unique(lat_lon_id$unique_id) #make a list of all the values in unique_id column, can this be numeric?
 
-poly_list <- vector("list", length(id_vec))
-#building a table
+#for testing
+df_short <- lat_lon_id %>% 
+   filter(unique_id == "110010033" | unique_id == "110010039" | unique_id == "110010075") 
 
+
+
+#make a shorter list for the test set
+id_vec_test <- unique(df_short$unique_id)
+poly_list <- vector("list", length(id_vec_test))
+
+
+
+#building a table, example to make sure it runs 
   
-df <- lat_lon %>% 
-   filter(a_hhid == 10010013) %>% 
+df_test <- lat_lon_id %>% 
+   filter(unique_id == "110010013") %>% 
     select(longitude, latitude) %>% 
     as.matrix
 
-y = df[1]
-z = df[9,2] #does it make a difference that this is a "named number"
 
-for(i in seq_along(unique(lat_lon$a_hhid))){
+#y = df[1]
+#z = df[9,2] #does it make a difference that this is a "named number"
+
+for(i in seq_along(unique(df_short$unique_id))){
   #filter the df 
-  id = id_vec[i]
-  df_test <- lat_lon %>% 
-    filter(a_hhid == id) %>% 
+  id = id_vec_test[i]
+  
+  df_short <- lat_lon_id %>% 
+    filter(unique_id == id) %>% 
     select(longitude, latitude) %>% 
     as.matrix
   #get the coodrinates
   #create the polygon, and add attributes
-  poly <- st_sf(data.frame(a_hhid = id, st_sfc(st_polygon(list(as.matrix(df_test)))),crs = 4326))
-  poly_list[[i]] <- poly
+  poly <- st_sf(data.frame(id = id, st_sfc(st_polygon(list(as.matrix(df_short))),crs = 4326)))
+  
+ poly_list[[i]] <- poly
 }
 
 
@@ -60,6 +83,14 @@ for(i in seq_along(unique(lat_lon$a_hhid))){
 
 
 ```
+
+Notes from Frew: 
+
+Distinct combo of farmer and pd, just blob together 
+Make a new frame that has: farmer_poly_id, x and y, farmer, and poly_id 
+Once you have something in this form, shouldn't be too hard to make into a shapefile
+
+
 
 
 
