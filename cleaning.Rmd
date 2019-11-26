@@ -74,8 +74,13 @@ for(i in seq_along(unique(df_short$unique_id))){
   #get the coodrinates
   #create the polygon, and add attributes
   poly <- st_sf(data.frame(id = id, st_sfc(st_polygon(list(as.matrix(df_short))),crs = 4326)))
-  
- poly_list[[i]] <- poly[[2,1]]
+ 
+ if(i == 1) {
+   poly_sf <- poly
+ } else {
+   poly_sf <- rbind(poly_sf, poly)
+ }
+ 
 }
 
 #another idea to try: 
@@ -88,14 +93,22 @@ polygon
 
 
 
+write_sf()
+
+
+
 ```
 
 Notes from Frew: 
 
-Distinct combo of farmer and pd, just blob together 
-Make a new frame that has: farmer_poly_id, x and y, farmer, and poly_id 
-Once you have something in this form, shouldn't be too hard to make into a shapefile
+Distinct combo of farmer and pd, just blob together (done)
 
+Writing out shapefiles
+```{r}
+st_write(poly_sf, "test.shp")
+
+
+```
 
 
 
