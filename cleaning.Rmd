@@ -50,9 +50,38 @@ df_short <- lat_lon_id %>%
 id_vec_test <- unique(df_short$unique_id)
 poly_list <- vector("list", length(id_vec_test))
 
+########################################################
 
+#making matrices and testing for closure
 
-#building a table, example to make sure it runs 
+ id = id_vec[i]
+  
+df <- lat_lon_id %>% 
+    filter(unique_id == id) %>% 
+    select(longitude, latitude) %>% 
+    as.matrix
+
+line_sf <- st_linestring(df)
+
+plot(line_sf)
+
+#check whether the first and last rows are the same point: 
+
+df[1, ] == df[nrow(df), ]
+
+#bind the matrix with its own first row to close it
+
+df_closed <- rbind(df, df[1, ])
+
+#check again if the first and last rows are closed
+
+df_closed[1, ] == df_closed[nrow(df_closed), ]
+
+line_sf_closed <- st_linestring(df_closed)
+
+plot(line_sf_closed)
+
+########################################################
   
 df_test <- lat_lon_id %>% 
    filter(unique_id == "110010013") %>% 
@@ -63,17 +92,21 @@ df_test <- lat_lon_id %>%
 #y = df[1]
 #z = df[9,2] #does it make a difference that this is a "named number"
 
-for(i in seq_along(unique(df_short$unique_id))){
+
+#######################################################
+
+for(i in seq_along(unique(lat_lon_id$unique_id))){
   #filter the df 
-  id = id_vec_test[i]
+  id = id_vec[i]
   
-  df_short <- lat_lon_id %>% 
+  df <- lat_lon_id %>% 
     filter(unique_id == id) %>% 
     select(longitude, latitude) %>% 
     as.matrix
   #get the coodrinates
   #create the polygon, and add attributes
-  poly <- st_sf(data.frame(unique_id = id, st_sfc(st_polygon(list(as.matrix(df_short))),crs = 4326)))
+  poly <- st_sf(data.frame(unique_id = id, st_sfc(st_polygon(list(as.matrix(df))),crs = 4326)))
+  
  
  if(i == 1) {
    poly_sf <- poly
@@ -110,15 +143,12 @@ info <- lat_lon_id[-c(4:5)]
 info_short <- info %>% 
   filter(unique_id == "110010033" | unique_id == "110010039" | unique_id == "110010075")
 
-#change column name of poly_sf from id to unique id so they match
 
 #merge  
 
 poly_complete <- merge(poly_sf, info_short, by = "unique_id")
 
-
-
-#if this doesn't work, than just do a table join in arcmap
+#yay works! 
 
 ```
 
@@ -129,9 +159,9 @@ Writing out shapefiles
 ```{r}
 st_write(poly_complete, "test_2.shp")
 
-
+#better if you could add a path, worry about this later
 ```
 
 
 
-
+Issue remaining - not all the first and last coordinates are the same!
