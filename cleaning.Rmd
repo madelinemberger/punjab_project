@@ -37,7 +37,7 @@ lat_lon_id$unique_id <- gsub(" ", "", lat_lon_id$unique_id, fixed = TRUE)
 
 ```{r}
 
-#filter out for a test set
+#all ids
 id_vec <- unique(lat_lon_id$unique_id) #make a list of all the values in unique_id column, can this be numeric?
 
 #for testing
@@ -73,7 +73,7 @@ for(i in seq_along(unique(df_short$unique_id))){
     as.matrix
   #get the coodrinates
   #create the polygon, and add attributes
-  poly <- st_sf(data.frame(id = id, st_sfc(st_polygon(list(as.matrix(df_short))),crs = 4326)))
+  poly <- st_sf(data.frame(unique_id = id, st_sfc(st_polygon(list(as.matrix(df_short))),crs = 4326)))
  
  if(i == 1) {
    poly_sf <- poly
@@ -85,27 +85,49 @@ for(i in seq_along(unique(df_short$unique_id))){
 
 #another idea to try: 
 
-polygon <- df %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
-  summarise(geometry = st_combine(geometry)) %>%
-  st_cast("POLYGON")
-polygon
+#polygon <- df %>%
+  #st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  #summarise(geometry = st_combine(geometry)) %>%
+  #st_cast("POLYGON")
+#polygon
 
 
 
-write_sf()
+#write_sf()
 
 
 
 ```
 
-Notes from Frew: 
+Bind poly_id, farmer id, and family id to poly_sf 
 
-Distinct combo of farmer and pd, just blob together (done)
+```{r}
+
+#create table of IDs minus the lat lon data
+
+info <- lat_lon_id[-c(4:5)]
+
+info_short <- info %>% 
+  filter(unique_id == "110010033" | unique_id == "110010039" | unique_id == "110010075")
+
+#change column name of poly_sf from id to unique id so they match
+
+#merge  
+
+poly_complete <- merge(poly_sf, info_short, by = "unique_id")
+
+
+
+#if this doesn't work, than just do a table join in arcmap
+
+```
+
+
+
 
 Writing out shapefiles
 ```{r}
-st_write(poly_sf, "test.shp")
+st_write(poly_complete, "test_2.shp")
 
 
 ```
