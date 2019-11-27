@@ -81,6 +81,21 @@ line_sf_closed <- st_linestring(df_closed)
 
 plot(line_sf_closed)
 
+
+#################################################
+
+#method 2: I am trying to tell R to identify duplicates, and then move the duplicate to the final row
+
+duplicated(df)
+
+dup <- df[duplicated(df)] 
+
+if(which(duplicated(df) != 1, nrow(df))) {
+ 
+}
+   
+
+
 ########################################################
   
 df_test <- lat_lon_id %>% 
@@ -155,13 +170,16 @@ poly_complete <- merge(poly_sf, info_short, by = "unique_id")
 
 
 
-Writing out shapefiles
+Writing out shapefiles and csv
 ```{r}
 st_write(poly_complete, "test_2.shp")
 
 #better if you could add a path, worry about this later
+
+
+write_csv(lat_lon_id, "H:/punjab_project/punjab_project/ids.csv", col_names = TRUE)
 ```
 
 
 
-Issue remaining - not all the first and last coordinates are the same!
+Issue remaining - not all the first and last coordinates are the same! They have to be in order
