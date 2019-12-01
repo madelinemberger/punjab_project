@@ -40,6 +40,13 @@ lat_lon_id$unique_id <- gsub(" ", "", lat_lon_id$unique_id, fixed = TRUE)
 #all ids
 id_vec <- unique(lat_lon_id$unique_id) #make a list of all the values in unique_id column, can this be numeric?
 
+
+#try with resp id
+
+id_vec_resp <- unique(lat_lon$resp_id)
+
+
+#############################################
 #for testing
 df_short <- lat_lon_id %>% 
    filter(unique_id == "110010033" | unique_id == "110010039" | unique_id == "110010075") 
@@ -110,17 +117,17 @@ df_test <- lat_lon_id %>%
 
 #######################################################
 
-for(i in seq_along(unique(lat_lon_id$unique_id))){
+for(i in seq_along(unique(lat_lon$resp_id))){
   #filter the df 
-  id = id_vec[i]
+  id = id_vec_resp[i]
   
-  df <- lat_lon_id %>% 
-    filter(unique_id == id) %>% 
-    select(longitude, latitude) %>% 
+  df <- lat_lon %>% 
+    filter(resp_id == id) %>% 
+    select(latitude, longitude)
     as.matrix
   #get the coodrinates
   #create the polygon, and add attributes
-  poly <- st_sf(data.frame(unique_id = id, st_sfc(st_polygon(list(as.matrix(df))),crs = 4326)))
+  poly <- st_sf(data.frame(resp_id = id, st_sfc(st_polygon(list(as.matrix(df))),crs = 4326)))
   
  
  if(i == 1) {
@@ -180,6 +187,47 @@ st_write(poly_complete, "test_2.shp")
 write_csv(lat_lon_id, "H:/punjab_project/punjab_project/ids.csv", col_names = TRUE)
 ```
 
+```{r}
+df_resp <- lat_lon_id %>% 
+    filter(resp_id == 101600981) %>% 
+    as.matrix
+```
 
 
 Issue remaining - not all the first and last coordinates are the same! They have to be in order
+
+##################################
+
+New thing: try to write a loop that tests resp_id
+
+```{r}
+#testing grouping
+group_by_resp <- lat_lon %>% 
+  group_by(resp_id)
+
+
+#new loop 
+
+for(i in seq_along(unique(lat_lon$resp_id))){
+  #filter the df 
+  id = id_vec_resp[i]
+  
+  df <- lat_lon %>% 
+    filter(resp_id == id) %>% 
+    select(resp_id,latitude, longitude)
+   
+    
+  if(df[1,2] != df[nrow(df),2]){  
+    print()
+  }
+}
+
+#poly <- st_sf(data.frame(resp_id = id, st_sfc(st_polygon(list(as.matrix(df))),crs = 4326)))
+
+
+df_test <- lat_lon %>% 
+    filter(resp_id == 100200021)
+
+df_test
+```
+
