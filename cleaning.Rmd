@@ -23,16 +23,15 @@ x = lat_lon$latitude[1]
 #create a unique identifier for each group of vertices by merging the plot id column with the farmer id to create a new id
 
 lat_lon_id <- lat_lon %>%
-  mutate(unique_id=paste(substr(plot_id, 2, 2), a_hhid))
+  mutate(unique_id=paste(substr(plot_id, 2, 2), resp_id))
   
 
 lat_lon_id$unique_id <- gsub(" ", "", lat_lon_id$unique_id, fixed = TRUE)
   #unite("unique_id", plot_id, a_hhid, remove = FALSE)
 
-#the goal is to:
-#loop over all the different of a_hhid and for each one, filter by "a_hhid = this" 
-#and then pull out lat and longitude 
-#turn into matrix 
+
+
+
 ```
 
 Data Cleaning
@@ -121,6 +120,41 @@ df_resp <- lat_lon_id %>%
 ```
 
 
+Filtered sets post-error
+###Removed: 1110600681, 1122201051, 1220301321, 1118200131
+```{r}
+#second
+clean_id_2 <- clean_id %>% 
+  filter(unique_id != 1110600681)
+
+id_vec_2 <- unique(clean_id_2$unique_id)
+
+#third
+
+clean_id_3 <- clean_id_2 %>% 
+  filter(unique_id != 1122201051)
+
+id_vec_3 <- unique(clean_id_3$unique_id)
+
+#fourth
+
+clean_id_35 <- clean_id_3 %>% 
+  filter(unique_id != 1220301371)
+
+clean_id_4 <- clean_id_35 %>% 
+  filter(unique_id != 1118200131)
+
+id_vec_4 <- unique(clean_id_4$unique_id)
+
+```
+
+
+
+
+
+
+
+
 Code to add another point for closure
 ```{r}
 #making matrices and testing for closure
@@ -157,12 +191,12 @@ plot(line_sf_closed)
 
 Loop to make polygons
 ```{r}
-for(i in seq_along(unique(clean_id$unique_id))){
+for(i in seq_along(unique(clean_id_4$unique_id))){
   #filter the df 
   print(i)
-  id = id_vec[i]
+  id = id_vec_4[i]
   
-  df <- clean_id %>% 
+  df <- clean_id_4 %>% 
     filter(unique_id == id) %>% 
     select(latitude, longitude)
     as.matrix
@@ -170,7 +204,7 @@ for(i in seq_along(unique(clean_id$unique_id))){
   print(i)
   #get the coodrinates
   #create the polygon, and add attributes
-  poly <- st_sf(data.frame(resp_id = id, st_sfc(st_polygon(list(as.matrix(df))),crs = 4326)))
+  poly <- st_sf(data.frame(unique_id = id, st_sfc(st_polygon(list(as.matrix(df))),crs = 4326)))
   
  print(i)
   
@@ -207,7 +241,7 @@ Bind poly_id, farmer id, and family id to poly_sf
 
 #create table of IDs minus the lat lon data
 
-info <- lat_lon_id[-c(4:5)]
+info <- clean_id[-c(4:5)]
 
 info_short <- info %>% 
   filter(unique_id == "110010033" | unique_id == "110010039" | unique_id == "110010075")
@@ -230,7 +264,9 @@ st_write(poly_complete, "test_2.shp")
 #better if you could add a path, worry about this later
 
 
-write_csv(lat_lon_id, "H:/punjab_project/punjab_project/ids.csv", col_names = TRUE)
+write_csv(clean_id, "H:/punjab_project/punjab_project/ids_2.csv", col_names = TRUE)
+
+write_csv(clean_id_3, "H:/punjab_project/punjab_project/ids_3.csv", col_names = TRUE)
 ```
 
 
@@ -285,8 +321,8 @@ poly <- st_sf(data.frame(resp_id = 100100331, st_sfc(st_polygon(list(as.matrix(d
 
 #using unique id
 
-df_test_uniq <- lat_lon_id %>% 
-  filter(unique_id == 110010033) %>% 
+df_test_uniq <- clean_id_3%>% 
+  filter(unique_id == 1122201051) %>% 
   select(latitude,longitude)
 
 
