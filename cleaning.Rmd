@@ -157,13 +157,13 @@ plot(line_sf_closed)
 
 Loop to make polygons
 ```{r}
-for(i in seq_along(unique(lat_lon$resp_id))){
+for(i in seq_along(unique(clean_id$unique_id))){
   #filter the df 
   print(i)
-  id = id_vec_resp[i]
+  id = id_vec[i]
   
-  df <- lat_lon %>% 
-    filter(resp_id == id) %>% 
+  df <- clean_id %>% 
+    filter(unique_id == id) %>% 
     select(latitude, longitude)
     as.matrix
     
