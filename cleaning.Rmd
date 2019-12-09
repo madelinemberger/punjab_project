@@ -136,6 +136,8 @@ for(i in seq_along(unique(lat_lon$resp_id))){
    poly_sf <- rbind(poly_sf, poly)
  }
  
+print(i)
+  
 }
 
 #another idea to try: 
@@ -230,4 +232,23 @@ df_test <- lat_lon %>%
 
 df_test
 ```
+
+Notes from kelsey
+a_hhid = farmer / household id 
+missing for 25 observations
+
+resp_id = 
+is never missing 
+
+some a_hhid have more than one 
+
+one missing logtude 
+
+split this id so that you can have a farmer plot panel
+
+when you get a dataset at the plot level 
+
+Priority be: shapefile available in whatever form before you go offline 
+
+Then start working more with the shapefile to merge in information like "was that plot burned"
 
