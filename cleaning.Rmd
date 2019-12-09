@@ -35,30 +35,94 @@ lat_lon_id$unique_id <- gsub(" ", "", lat_lon_id$unique_id, fixed = TRUE)
 #turn into matrix 
 ```
 
+Data Cleaning
 ```{r}
+#remove all NAs
+clean <- lat_lon[complete.cases(lat_lon), ]
 
-#all ids
-id_vec <- unique(lat_lon_id$unique_id) #make a list of all the values in unique_id column, can this be numeric?
+clean_id <-lat_lon_id[complete.cases(lat_lon_id), ]
+```
 
+
+
+Creating vectors
+##-unique id, resp Id
+
+```{r}
+#unique id 
+
+id_vec <- unique(clean_id$unique_id) #make a list of all the values in unique_id column, can this be numeric?
 
 #try with resp id
 
-id_vec_resp <- unique(lat_lon$resp_id)
+id_vec_resp <- unique(clean$resp_id)
+
+#try with a_hhid
+
+id_vec_ah <-unique(clean$a_hhid)
 
 
-#############################################
+#old - from before it was clean, just to compare which are missing
+
+id_vec_old <- unique(lat_lon_id$unique_id)
+
+id_vec_resp_old <- unique(lat_lon$resp_id)
+
+```
+
+
+
+Data Exploration
+###1 How many loops are we dealing with?
+###2 What are the first and last values?
+
+
+```{r}
+#aparently, resp_id is unique to polygons
+
+#1.How many unique resp_ids?
+length(id_vec_resp)
+
+head(id_vec_resp)
+
+tail(id_vec_resp,1)
+
+#2. How many unique_ids?
+
+length(id_vec)
+
+#4. How many a_hhid
+
+length(id_vec_ah)
+
+#4.Compared to old?
+
+length(id_vec_old)
+
+```
+
+
+
+Create subsets for testing
+```{r}
+#with unique Id
 #for testing
 df_short <- lat_lon_id %>% 
    filter(unique_id == "110010033" | unique_id == "110010039" | unique_id == "110010075") 
 
-
-
 #make a shorter list for the test set
 id_vec_test <- unique(df_short$unique_id)
-poly_list <- vector("list", length(id_vec_test))
 
-########################################################
 
+#with resp id 
+df_resp <- lat_lon_id %>% 
+    filter(resp_id == 101600981) %>% 
+    as.matrix
+```
+
+
+Code to add another point for closure
+```{r}
 #making matrices and testing for closure
 
  id = id_vec[i]
@@ -89,47 +153,27 @@ line_sf_closed <- st_linestring(df_closed)
 plot(line_sf_closed)
 
 
-#################################################
+```
 
-#method 2: I am trying to tell R to identify duplicates, and then move the duplicate to the final row
-
-duplicated(df)
-
-dup <- df[duplicated(df)] 
-
-if(which(duplicated(df) != 1, nrow(df))) {
- 
-}
-   
-
-
-########################################################
-  
-df_test <- lat_lon_id %>% 
-   filter(unique_id == "110010013") %>% 
-    select(longitude, latitude) %>% 
-    as.matrix
-
-
-#y = df[1]
-#z = df[9,2] #does it make a difference that this is a "named number"
-
-
-#######################################################
-
+Loop to make polygons
+```{r}
 for(i in seq_along(unique(lat_lon$resp_id))){
   #filter the df 
+  print(i)
   id = id_vec_resp[i]
   
   df <- lat_lon %>% 
     filter(resp_id == id) %>% 
     select(latitude, longitude)
     as.matrix
+    
+  print(i)
   #get the coodrinates
   #create the polygon, and add attributes
   poly <- st_sf(data.frame(resp_id = id, st_sfc(st_polygon(list(as.matrix(df))),crs = 4326)))
   
- 
+ print(i)
+  
  if(i == 1) {
    poly_sf <- poly
  } else {
@@ -142,10 +186,10 @@ print(i)
 
 #another idea to try: 
 
-#polygon <- df %>%
-  #st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
-  #summarise(geometry = st_combine(geometry)) %>%
-  #st_cast("POLYGON")
+polygon <- df %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")
 #polygon
 
 
@@ -155,6 +199,7 @@ print(i)
 
 
 ```
+
 
 Bind poly_id, farmer id, and family id to poly_sf 
 
@@ -178,7 +223,6 @@ poly_complete <- merge(poly_sf, info_short, by = "unique_id")
 
 
 
-
 Writing out shapefiles and csv
 ```{r}
 st_write(poly_complete, "test_2.shp")
@@ -189,11 +233,6 @@ st_write(poly_complete, "test_2.shp")
 write_csv(lat_lon_id, "H:/punjab_project/punjab_project/ids.csv", col_names = TRUE)
 ```
 
-```{r}
-df_resp <- lat_lon_id %>% 
-    filter(resp_id == 101600981) %>% 
-    as.matrix
-```
 
 
 Issue remaining - not all the first and last coordinates are the same! They have to be in order
@@ -226,12 +265,42 @@ for(i in seq_along(unique(lat_lon$resp_id))){
 
 #poly <- st_sf(data.frame(resp_id = id, st_sfc(st_polygon(list(as.matrix(df))),crs = 4326)))
 
-
-df_test <- lat_lon %>% 
-    filter(resp_id == 100200021)
-
-df_test
+###############################
 ```
+
+
+Why is the second one failing?
+```{r}
+
+#using resp id
+
+df_test_resp <- lat_lon %>% 
+  filter(resp_id == 100100331) %>% 
+  select(latitude,longitude)
+
+df_test_resp
+  
+poly <- st_sf(data.frame(resp_id = 100100331, st_sfc(st_polygon(list(as.matrix(df_test_resp))),crs = 4326)))
+
+
+#using unique id
+
+df_test_uniq <- lat_lon_id %>% 
+  filter(unique_id == 110010033) %>% 
+  select(latitude,longitude)
+
+
+poly_uniq <- st_sf(data.frame(resp_id = 100100331, st_sfc(st_polygon(list(as.matrix(df_test_uniq))),crs = 4326)))
+
+df_test_uniq
+
+#so this works but the one above does not
+```
+
+Overall - NONE of these IDs are unique to the polygon!!
+
+
+######################################
 
 Notes from kelsey
 a_hhid = farmer / household id 
