@@ -241,15 +241,12 @@ Bind poly_id, farmer id, and family id to poly_sf
 
 #create table of IDs minus the lat lon data
 
-info <- clean_id[-c(4:5)]
-
-info_short <- info %>% 
-  filter(unique_id == "110010033" | unique_id == "110010039" | unique_id == "110010075")
+info <- clean_id_4[-c(1,4:5)]
 
 
 #merge  
 
-poly_complete <- merge(poly_sf, info_short, by = "unique_id")
+poly_complete <- merge(poly_sf, info, by = "unique_id")
 
 #yay works! 
 
@@ -259,7 +256,7 @@ poly_complete <- merge(poly_sf, info_short, by = "unique_id")
 
 Writing out shapefiles and csv
 ```{r}
-st_write(poly_complete, "test_2.shp")
+st_write(poly_complete, "test_all.shp")
 
 #better if you could add a path, worry about this later
 
@@ -280,7 +277,6 @@ New thing: try to write a loop that tests resp_id
 ```{r}
 #testing grouping
 group_by_resp <- lat_lon %>% 
-  group_by(resp_id)
 
 
 #new loop 
