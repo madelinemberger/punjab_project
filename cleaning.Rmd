@@ -36,6 +36,13 @@ lat_lon_id$unique_id <- gsub(" ", "", lat_lon_id$unique_id, fixed = TRUE)
 
 Data Cleaning
 ```{r}
+#find any values with Na
+
+summary(lat_lon_id)
+
+check_na <- lat_lon_id %>% 
+  filter(is.na(a_hhid) | is.na(longitude))
+
 #remove all NAs
 clean <- lat_lon[complete.cases(lat_lon), ]
 
@@ -152,10 +159,7 @@ id_vec_4 <- unique(clean_id_4$unique_id)
 
 
 
-
-
-
-Code to add another point for closure
+Code to add another point for closure - if needed
 ```{r}
 #making matrices and testing for closure
 
@@ -194,17 +198,19 @@ Loop to make polygons
 for(i in seq_along(unique(clean_id_4$unique_id))){
   #filter the df 
   print(i)
+  
   id = id_vec_4[i]
   
   df <- clean_id_4 %>% 
     filter(unique_id == id) %>% 
-    select(latitude, longitude)
+    select(longitude,latitude)
     as.matrix
     
   print(i)
   #get the coodrinates
   #create the polygon, and add attributes
-  poly <- st_sf(data.frame(unique_id = id, st_sfc(st_polygon(list(as.matrix(df))),crs = 4326)))
+  poly <- st_sf(data.frame(unique_id = id, 
+                           st_sfc(st_polygon(list(as.matrix(df))),crs = 4326)))
   
  print(i)
   
@@ -220,16 +226,6 @@ print(i)
 
 #another idea to try: 
 
-polygon <- df %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
-  summarise(geometry = st_combine(geometry)) %>%
-  st_cast("POLYGON")
-#polygon
-
-
-
-#write_sf()
-
 
 
 ```
@@ -244,11 +240,18 @@ Bind poly_id, farmer id, and family id to poly_sf
 info <- clean_id_4[-c(1,4:5)]
 
 
-#merge  
+#merge  - tried three ways
 
-poly_complete <- merge(poly_sf, info, by = "unique_id")
+poly_complete_merge <- merge(info, poly_sf, by = "unique_id")
 
-#yay works! 
+poly_complete_join <- merge(x = info, y = poly_sf, by = "unique_id")
+
+join <- left_join(info %>% group_by(unique_id) %>% mutate(id = row_number()), poly_sf %>% group_by(unique_id) %>% mutate(id = row_number()), by= c("unique_id", "id"))
+
+#USE THIS ONE - removed the duplicates from the one above
+
+
+clean_done <- poly_complete_merge[!duplicated(poly_complete$unique_id), ]
 
 ```
 
@@ -256,7 +259,9 @@ poly_complete <- merge(poly_sf, info, by = "unique_id")
 
 Writing out shapefiles and csv
 ```{r}
-st_write(poly_complete, "test_all.shp")
+st_write(poly_sf, "test_noinfo.shp")
+
+st_write(clean_done, "test_all.shp")
 
 #better if you could add a path, worry about this later
 
