@@ -250,7 +250,6 @@ join <- left_join(info %>% group_by(unique_id) %>% mutate(id = row_number()), po
 
 #USE THIS ONE - removed the duplicates from the one above
 
-
 clean_done <- poly_complete_merge[!duplicated(poly_complete$unique_id), ]
 
 ```
@@ -269,15 +268,15 @@ st_write(clean_done, "test_all.shp")
 write_csv(clean_id, "H:/punjab_project/punjab_project/ids_2.csv", col_names = TRUE)
 
 write_csv(clean_id_3, "H:/punjab_project/punjab_project/ids_3.csv", col_names = TRUE)
+
+write_csv(check_na, "H:/punjab_project/punjab_project/removed.csv", col_names = TRUE)
 ```
 
 
 
-Issue remaining - not all the first and last coordinates are the same! They have to be in order
-
 ##################################
 
-New thing: try to write a loop that tests resp_id
+Tried but unsuccessful: loop that tests resp_id
 
 ```{r}
 #testing grouping
@@ -306,7 +305,7 @@ for(i in seq_along(unique(lat_lon$resp_id))){
 ```
 
 
-Why is the second one failing?
+Build polygons to test certain IDs
 ```{r}
 
 #using resp id
