@@ -250,17 +250,28 @@ join <- left_join(info %>% group_by(unique_id) %>% mutate(id = row_number()), po
 
 #USE THIS ONE - removed the duplicates from the one above
 
-clean_done <- poly_complete_merge[!duplicated(poly_complete$unique_id), ]
+clean_done <- poly_complete_merge[!duplicated(poly_complete_merge$unique_id), ]
+
+```
+
+Select random sample of 200 for verification 
+
+```{r}
+
+clean_sample <- sample_n(clean_done, 200)
+#just randomly selecs 200 rows from the specified data frame, dplyr
 
 ```
 
 
 
-Writing out shapefiles and csv
+Writing out shapefiles and csv  
 ```{r}
 st_write(poly_sf, "test_noinfo.shp")
 
 st_write(clean_done, "test_all.shp")
+
+st_write(clean_sample, "random_sample.shp")
 
 #better if you could add a path, worry about this later
 
@@ -271,6 +282,14 @@ write_csv(clean_id_3, "H:/punjab_project/punjab_project/ids_3.csv", col_names = 
 
 write_csv(check_na, "H:/punjab_project/punjab_project/removed.csv", col_names = TRUE)
 ```
+
+
+
+
+
+
+
+
 
 
 
