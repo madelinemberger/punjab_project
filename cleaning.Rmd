@@ -13,6 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(sf)
 library(stringr)
+library(rgdal)
+library(maptools)
 
 lat_lon <- read.csv("lag_lng_allbaseline.csv")
 
@@ -127,7 +129,7 @@ df_resp <- lat_lon_id %>%
 ```
 
 
-Filtered sets post-error
+Filtered sets post-error - you need to run this to make sure the loop is operating on the clean data set
 ###Removed: 1110600681, 1122201051, 1220301321, 1118200131
 ```{r}
 #second
@@ -285,6 +287,15 @@ write_csv(check_na, "H:/punjab_project/punjab_project/removed.csv", col_names = 
 
 
 
+Write out kml file for Google Earth or MyMaps (not working so far)
+```{r}
+#first need to create a spatial polygon from the dataframe - this isn't working
+
+SpatialPolygonsDataFrame(poly_sf, info)
+
+writeOGR(clean_sample, dsn="random_sample.kml", layer = "sample_plots", driver = "KML")
+
+```
 
 
 
