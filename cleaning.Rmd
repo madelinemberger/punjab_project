@@ -129,7 +129,7 @@ df_resp <- lat_lon_id %>%
 ```
 
 
-Filtered sets post-error - you need to run this to make sure the loop is operating on the clean data set
+Filtered sets post-error - *you need to run this to make sure the loop is operating on the clean data set*
 ###Removed: 1110600681, 1122201051, 1220301321, 1118200131
 ```{r}
 #second
@@ -263,6 +263,21 @@ Select random sample of 200 for verification
 clean_sample <- sample_n(clean_done, 200)
 #just randomly selecs 200 rows from the specified data frame, dplyr
 
+info_sample <- clean_sample[-c(4)]
+
+#create a data set with the random sample removed, per Kelsey's request
+
+#use `anti_join` from the tidverse to take out the 200 sample, just need to convert sf objects to dataframes 
+
+clean_done_df <- as.data.frame(clean_done)
+
+clean_sample_df <- as.data.frame(clean_sample)
+
+all_minus_sample <- anti_join(clean_done_df, clean_sample_df, by = "unique_id")
+
+#convert back to spatial object
+all_minus_sample_sf <- st_as_sf(x = all_minus_sample, sf_column_name = "geometry")
+
 ```
 
 
@@ -274,6 +289,8 @@ st_write(poly_sf, "test_noinfo.shp")
 st_write(clean_done, "test_all.shp")
 
 st_write(clean_sample, "random_sample.shp")
+
+st_write(all_minus_sample_sf, "all_minus_sample.shp")
 
 #better if you could add a path, worry about this later
 
