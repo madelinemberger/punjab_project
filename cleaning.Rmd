@@ -276,7 +276,7 @@ clean_sample_df <- as.data.frame(clean_sample)
 all_minus_sample <- anti_join(clean_done_df, clean_sample_df, by = "unique_id")
 
 #convert back to spatial object
-all_minus_sample_sf <- st_as_sf(x = all_minus_sample, sf_column_name = "geometry")
+all_minus_sample_sf <- st_as_sf(x = all_minus_sample, sf_column_name = "geometry") #this didn't work 
 
 ```
 
