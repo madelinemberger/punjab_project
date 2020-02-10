@@ -387,11 +387,6 @@ clean_poly_everything <- inner_join(survey_less,clean_done, by = "resp_id")
 
 ```{r}
 
-
-
-mapview(clean_poly_ablu, ncol()) #so somewhere we have lost our spatial data
-
-
 clean_poly_everything <- st_as_sf(x = clean_poly_everything, sf_column_name = "geometry") 
 
 clean_poly_ablu <- clean_poly_everything %>% 
@@ -400,6 +395,28 @@ clean_poly_ablu <- clean_poly_everything %>%
 mapview(clean_poly_ablu) # yay    
 
 ```
+
+#next step 
+
+Since all of these polygons say "no burn"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
