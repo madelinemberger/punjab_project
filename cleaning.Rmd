@@ -14,9 +14,11 @@ library(tidyverse)
 library(sf)
 library(stringr)
 library(rgdal)
+library(raster)
 library(maptools)
 library(mapview)
 library(here)
+
 
 lat_lon <- read.csv("lag_lng_allbaseline.csv")
 
@@ -49,6 +51,7 @@ summary(lat_lon_id)
 check_na <- lat_lon_id %>% 
   filter(is.na(a_hhid) | is.na(longitude))
 
+
 #remove all NAs
 #clean <- lat_lon[complete.cases(lat_lon), ]
 
@@ -57,7 +60,7 @@ clean_id <-lat_lon_id[complete.cases(lat_lon_id), ]
 
 
 
-###Creating vectors
+###Creating vectors: id_vec is the one used in the final version of loop
 -unique id, resp Id
 
 ```{r}
@@ -114,7 +117,7 @@ length(id_vec_old)
 
 
 
-###Create subsets for testing
+###Create subsets for testing loop (no need to run unless loop is amended)
 ```{r}
 #with unique Id
 #for testing
@@ -196,7 +199,7 @@ plot(line_sf_closed)
 
 ```
 
-Loop to make polygons - you must use 'clean_id_4' for it to run properly 
+**Loop to make polygons - you must use 'clean_id_4' for it to run properly* **
 ```{r}
 for(i in seq_along(unique(clean_id_4$unique_id))){
   #filter the df 
@@ -301,6 +304,8 @@ write_csv(clean_id, "H:/punjab_project/punjab_project/ids_2.csv", col_names = TR
 write_csv(clean_id_3, "H:/punjab_project/punjab_project/ids_3.csv", col_names = TRUE)
 
 write_csv(check_na, "H:/punjab_project/punjab_project/removed.csv", col_names = TRUE)
+
+write_csv(clean_done,"H:/punjab_project/punjab_project/clean_poly_info.csv", col_names = TRUE )
 ```
 
 
@@ -387,18 +392,47 @@ clean_poly_everything <- inner_join(survey_less,clean_done, by = "resp_id")
 
 ```{r}
 
+#for some reason when you join things to spatial dataframes it loses its sf classification, need to re-add
+
 clean_poly_everything <- st_as_sf(x = clean_poly_everything, sf_column_name = "geometry") 
 
+write_csv(clean_poly_everything,"H:/punjab_project/punjab_project/clean_poly_survey.csv", col_names = TRUE )
+
+
+#filter out a subset and map to see if it worked
 clean_poly_ablu <- clean_poly_everything %>% 
   filter(village == "Ablu")
 
-mapview(clean_poly_ablu) # yay    
+mapview(clean_poly_ablu, alpha.regions = 0.1, layer.name = "Ablu Plots") # yay    
 
 ```
 
-#next step 
+Next step: 
 
-Since all of these polygons say "no burn"
+Since all of these polygons say "no burn", just see if any of them come as burned using the first raster, char threshold = 0.9
+
+
+Read in raster data
+```{r}
+
+week1_90 <- raster("week1_90.tif")
+
+#look at it
+
+
+mapview(week1_90)
+
+
+#cool! What are the colors for?
+
+
+ex <- mapview(clean_poly_ablu, layer.name = "Plots")+
+  mapview(week1_90, layer.name = "Burn scars")
+
+mapshot(ex, url = paste0(getwd(), "/example.html"))
+
+```
+
 
 
 
