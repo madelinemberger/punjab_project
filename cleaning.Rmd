@@ -522,7 +522,7 @@ Overall - NONE of these IDs are unique to the polygon!!
 Notes from kelsey
 a_hhid = farmer / household id 
 missing for 25 observations
-
+  
 resp_id = 
 is never missing 
 
