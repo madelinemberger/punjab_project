@@ -209,7 +209,7 @@ for(i in seq_along(unique(clean_id_4$unique_id))){
   
   df <- clean_id_4 %>% 
     filter(unique_id == id) %>% 
-    select(longitude,latitude)
+    dplyr::select(longitude,latitude)
     as.matrix
     
   print(i)
@@ -248,11 +248,11 @@ info <- clean_id_4[-c(1,4:5)]
 
 #merge  - tried three ways
 
-poly_complete_merge <- merge(info, poly_sf, by = "unique_id")
+poly_complete_merge <- merge(info, poly_sf, by = "unique_id") # run this first
 
-poly_complete_join <- merge(x = info, y = poly_sf, by = "unique_id")
+#poly_complete_join <- merge(x = info, y = poly_sf, by = "unique_id")
 
-join <- left_join(info %>% group_by(unique_id) %>% mutate(id = row_number()), poly_sf %>% group_by(unique_id) %>% mutate(id = row_number()), by= c("unique_id", "id"))
+#join <- left_join(info %>% group_by(unique_id) %>% mutate(id = row_number()), poly_sf %>% group_by(unique_id) %>% mutate(id = row_number()), by= c("unique_id", "id"))
 
 #USE THIS ONE - removed the duplicates from the one above
 
@@ -326,54 +326,56 @@ writeOGR(clean_sample, dsn="random_sample.kml", layer = "sample_plots", driver =
 ###Read in the dataset
 ```{r}
 
-survey_all <- read_csv(here("survey_data", "monitoring_forsensor.csv"))
+survey_all <- read_csv(here("survey_data", "baseline_cropburning_plotlevel.csv"))
 
 summary(survey_all)
 
-avg_plot_p_respondent <- 3224 / 148
+
 
 ```
 
 
-Note - there are fewer observations than polygons, which makes sense. From these numbers, farmer have on average 21.7 plots 
 
 
 
 
-###Go exploring 
-I don' think many of these variables will be needed for visualization, so make a subset to explore with
+###Cleaning and exploring 
+I don' think many of these variables will be needed for visualization, so make a subset to explore with.
+Recode crop burning so that:
+- burn = 0 if land_plot_burn == 0 | land_plot_burn ==2
+- burn = 1 if land_plot_burn == 1
+ 
 
 ```{r}
 
-survey_less <- survey_all %>% 
-  select(resp_id,a_hhid,treatment,plot,plot_id,plot_count,village,district,burnt,harvested,monitoring_date)
+cols <- c(1:9,22:23)
 
-length(unique(survey_less$resp_id))
+survey_less <- survey_all[,cols] #select just the columns specified above
+
+survey_clean <- survey_less %>% 
+  mutate(burn = case_when(
+    land_plot_burn == 0 | land_plot_burn == 2 ~ 0,
+    land_plot_burn == 1 ~ 1
+  )) #recoding burn 
+         
+
+length(unique(survey_less$resp_id)) #1843
 
 length(unique(survey_less$a_hhid))
 
-treatment_hist <- ggplot(survey_less, aes(x = treatment))+
+burn_hist <- ggplot(survey_clean, aes(x = burn))+ #how many plots in each answer
     geom_bar()
 
-plotcount_hist <- ggplot(survey_less, aes(x = plot_count)) + 
+burn_hist
+
+plotarea_hist <- ggplot(survey_clean, aes(x = land_plot_area)) + 
   geom_histogram()
 
-plotcount_hist
+plotarea_hist
 
-c
 
 ```
 
-**Somethings I want to know**
--can I group by a_hhid and count the number of plots?
--how many a_hhid - does that match?
-
-Number of resp_id = 148
-Number of a_hhid = 148
-
-**Questions**
-
-Looking at burnt, all of these respondents said no? Are none of the control groups here? 
 
 
 ###Join data
@@ -381,10 +383,13 @@ use inner join and resp_id to join
 
 ```{r}
 
+#read in the df file
+
+polygons <- read_sf(dsn = "." , layer = "test_all")
 
 length(unique(clean_done$resp_id))
 
-clean_poly_everything <- inner_join(survey_less,clean_done, by = "resp_id")
+clean_poly_everything <- inner_join(polygons, survey_clean, by = "resp_id") #success! this is in class sf
 
 ```
 
