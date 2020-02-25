@@ -383,25 +383,24 @@ use inner join and resp_id to join
 
 ```{r}
 
-#read in the df file
+#read in the spatial polygon file
 
 polygons <- read_sf(dsn = "." , layer = "test_all")
 
-length(unique(clean_done$resp_id))
+#join polygons to the survey data
 
-clean_poly_everything <- inner_join(polygons, survey_clean, by = "resp_id") #success! this is in class sf
+clean_poly_everything <- inner_join(polygons, survey_clean, by = "resp_id") %>% 
+  dplyr::select(-a_hhid.y) %>% 
+  rename(a_hhid = a_hhid.x) #success! this is in class sf
 
 ```
 
 ###Look at results (small subsets)
+Since this version does not have them grouped by village, harder to look at only a few. 
+Note: look for ways to subset by geometry
+https://geocompr.robinlovelace.net/attr.html
 
 ```{r}
-
-#for some reason when you join things to spatial dataframes it loses its sf classification, need to re-add
-
-clean_poly_everything <- st_as_sf(x = clean_poly_everything, sf_column_name = "geometry") 
-
-write_csv(clean_poly_everything,"H:/punjab_project/punjab_project/clean_poly_survey.csv", col_names = TRUE )
 
 
 #filter out a subset and map to see if it worked
@@ -414,7 +413,6 @@ mapview(clean_poly_ablu, alpha.regions = 0.1, layer.name = "Ablu Plots") # yay
 
 Next step: 
 
-Since all of these polygons say "no burn", just see if any of them come as burned using the first raster, char threshold = 0.9
 
 
 Read in raster data
